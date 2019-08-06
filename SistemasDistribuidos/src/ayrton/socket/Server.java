@@ -17,37 +17,88 @@ public class Server {
 	private void fechaSocket(Socket sock) throws IOException {
 		sock.close();
 	}
-	private void trataConexao(Socket socket) throws IOException  {
+	private void trataConexao2(Socket socket)throws IOException{
 		try {
 			ObjectOutputStream output = new ObjectOutputStream(socket.getOutputStream());
 			ObjectInputStream input = new ObjectInputStream(socket.getInputStream());
-			
+			String nomeArquivo;
 			String msg = input.readUTF();
-			System.out.println("Mensagem recebida.");
-			if(msg.contains("/criaarquivo")) {
-				output.writeUTF("Arquivo Criado");
-				output.flush();
-        	}else {
-			output.writeUTF("Hello World!");
-			output.flush();
-        	}
-			input.close();
-			output.close();
-			
+			 switch(msg){
+			 	case "/CriaArquivo":{
+			 		output.writeUTF("ensira o nome do arquivo");
+			 		output.flush();
+			 		nomeArquivo=input.readUTF();
+			 		criaArquivo(nomeArquivo);
+			 		output.writeUTF("arquivo Criado");
+			 		output.flush();
+			 		break;
+			 	}
+			 	case "/EscreveNoArquivo":{
+			 		output.writeUTF("ensira o nome do arquivo");
+			 		output.flush();
+			 		nomeArquivo = input.readUTF();
+			 		output.writeUTF("Digite o texto do arquivo");
+			 		output.flush();
+			 		String texto = input.readUTF();
+			 		escreveNoArquivo(nomeArquivo,texto);
+			 		output.writeUTF("escreveu no arquivo");
+			 		output.flush();
+			 		break;
+			 	}
+			 	case "/CopiarArquivo":{
+			 		output.writeUTF("informe o nome do arquivo");
+			 		output.flush();
+			 		nomeArquivo = input.readUTF();
+			 		copiaArquivo(nomeArquivo);
+			 		output.writeUTF("arquivo Copiado");
+			 		output.flush();
+			 		break;
+			 	}
+			 	default :{
+			 		output.writeUTF("op�ao invalida!");
+			 		break;
+			 	}
+			 }
+			 output.close();
+			 input.close();
 		}catch(IOException e) {
-
+			
 		}finally {
 			fechaSocket(socket);
 		}
 	}
+	private void criaArquivo(String msg) throws IOException {
+		FileWriter arq = new FileWriter(new File(msg+".txt"));
+		arq.close();
+	}
+	private void escreveNoArquivo(String nomeArquivo, String texto) throws IOException {
+		File arquivo = new File(nomeArquivo+".txt");
+		BufferedWriter buf = new BufferedWriter(new FileWriter(arquivo));
+		buf.write(texto);
+		buf.flush();
+		buf.close();
+	}
 	
-	private void filtro(String mensagem) {
-		String str = mensagem;
-		for(int i=0 i<)
-		if(str.contains("/criaArquivo")) {
-			
+	private void copiaArquivo(String nome) {
+		String nomeOrigem = nome + ".txt";
+		String nomeDestino = nome + "Copia.txt";
+		try {
+		FileInputStream fInput = new FileInputStream(nomeOrigem);
+		FileOutputStream fOutput = new FileOutputStream(nomeDestino);
+		
+		byte[] strBuffer = new byte[1024];
+		int strLength;
+		while((strLength = fInput.read(strBuffer)) > 0) {
+			fOutput.write(strBuffer,0,strLength);
+		}
+		fOutput.close();
+		fInput.close();
+		
+		}catch(IOException e) {
+			e.printStackTrace();
 		}
 	}
+	
     public static void main(String[] args) {
         try {
         	Server server = new Server();
@@ -55,18 +106,9 @@ public class Server {
             System.out.println("Aguardando cliente...");
             //Espera pela conexão
             while(true) { 
-                //Accept bloqueia o processo até que receba nova conexão
             	Socket client = server.esperaConexao();
-            	//Socket client = sock.accept();
-            	
-            	//Prepara um objeto para escrever pelo socket
-            	server.trataConexao(client);
-	//	PrintWriter pout = new PrintWriter(client.getOutputStream(), true);
-                //Escreve a data através do socket
-      //         pout.println(new java.util.Date().toString());
-            
-           //    System.out.println("Data enviada para " + client.getInetAddress());
-                //Fecha o socket e volta a esperar outras conexões
+            	server.trataConexao2(client);
+
                 client.close();
             }
         } catch (IOException ioe){
