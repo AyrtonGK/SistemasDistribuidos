@@ -13,7 +13,7 @@ public class Client {
 			ObjectInputStream input = new ObjectInputStream(sock.getInputStream());
 			
 			//client.criaArquivo(input, output);
-			client.copiaOArquivo(input, output);
+			//client.copiaOArquivo(input, output);
 			//client.escreveNoArquivo(input, output);
 			// Finaliza Input e output
 			input.close();
